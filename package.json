@@ -1,0 +1,19 @@
+{
+    "name": "@tolkam/react-toggleables",
+    "version": "1.0.0",
+    "description": "Toggleable elements",
+    "main": "src/index.ts",
+    "license": "UNLICENSED",
+    "private": true,
+    "dependencies": {
+        "react": "^16.5",
+        "@tolkam/lib-utils": "file:D:/dev-packages/js/tolkam/lib-utils",
+        "@tolkam/lib-utils-ui": "file:D:/dev-packages/js/tolkam/lib-utils-ui",
+        "@tolkam/react-animatable": "file:D:/dev-packages/js/tolkam/react-animatable"
+    },
+    "devDependencies": {
+        "tslib": "^1.9.3",
+        "@types/node": "^12.12.34",
+        "@types/react": "^16.4"
+    }
+}
