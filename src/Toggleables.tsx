@@ -83,42 +83,25 @@ export default class Toggleables extends PureComponent<IProps, IState> {
      */
     protected activate = (name: string) => {
         const that = this;
-        const { children } = that;
+        const { children, update } = that;
         const promises: Promise<any>[] = [];
+        const prevActive = that.state.active;
 
-        if(that.state.active === name) {
+        // already active
+        if(prevActive === name) {
             return;
         }
 
         // collect beforeActivate promises
-        for(const childName in children) {
-            children[childName].forEach((item) => {
-                let promise;
-                if(childName === name && item.props.beforeActivate) {
-                    promise = item.props.beforeActivate();
-                } else {
-                    promise = Promise.resolve();
-                }
-
-                promises.push(promise);
-            });
-        }
+        children[name].forEach((item) => {
+            const { beforeActivate } = item.props;
+            promises.push(beforeActivate ? beforeActivate() : Promise.resolve());
+        });
 
         that.setState({pending: true});
         Promise.all(promises).then(() => {
-            for(const childName in children) {
-                children[childName].forEach((item) => {
-                    const { onDeactivate, onActivate} = item.props;
-                    const active = childName === name;
-                    if(active && !item.isActive()) {
-                        onActivate && onActivate();
-                    }
-                    if(!active && item.isActive()) {
-                        onDeactivate && onDeactivate();
-                    }
-                    item.setActive(active);
-                });
-            }
+            update(name, true);
+            update(prevActive, false);
         }).catch((e) => {
             if (process.env.NODE_ENV !== 'production') {
                 console.warn('Toggleables: failed to activate "%s"', name, e);
@@ -128,9 +111,21 @@ export default class Toggleables extends PureComponent<IProps, IState> {
         });
     };
 
-    protected deactivate = () => {
-
-    }
+    /**
+     * Updates children state
+     *
+     * @param name
+     * @param active
+     */
+    protected update = (name: string | null, active: boolean) => {
+        name && this.children[name].forEach(item => {
+            const { onActivate, onDeactivate } = item.props;
+            if(item.isActive() !== active) {
+                item.setActive(active);
+                active ? onActivate && onActivate() : onDeactivate && onDeactivate();
+            }
+        });
+    };
 }
 
 type TChildren = {
@@ -140,9 +135,10 @@ type TLifecycleCallback = (name: string, child: Toggleable) => any;
 
 export interface IProps extends HTMLProps<HTMLDivElement> {
     defaultActive?: string;
+    pendingClassName?: string;
+
     onRegister?: TLifecycleCallback;
     onUnregister?: TLifecycleCallback;
-    pendingClassName?: string;
 }
 
 export interface IState {

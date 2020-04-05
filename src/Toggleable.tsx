@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { PureComponent, HTMLAttributes, Children, cloneElement, isValidElement } from 'react';
 import { classNames } from '@tolkam/lib-utils-ui';
-import Animatable from '@tolkam/react-animatable';
 import ToggleablesContext, { TContext } from './context';
 
 export default class Toggleable extends PureComponent<IProps, IState> {
@@ -68,7 +67,7 @@ export default class Toggleable extends PureComponent<IProps, IState> {
         const { active } = state;
         const child = Children.only(props.children);
 
-        if(!isValidElement(child)) {
+        if(!isValidElement(child) || unmount && !active) {
             return null;
         }
 
@@ -82,18 +81,13 @@ export default class Toggleable extends PureComponent<IProps, IState> {
             }),
         };
 
-        return <Animatable show={active} keepMounted={!unmount}>
-            {cloneElement(child, elProps)}
-        </Animatable>;
+        return cloneElement(child, elProps);
     }
 }
 
 export interface IProps extends HTMLAttributes<Toggleable> {
     name: string;
-
     activeClassName?: string,
-
-    // unmount if not active
     unmount?: boolean,
 
     beforeActivate?: () => Promise<any>,

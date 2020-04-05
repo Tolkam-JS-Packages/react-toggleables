@@ -8,8 +8,7 @@
     "dependencies": {
         "react": "^16.5",
         "@tolkam/lib-utils": "file:D:/dev-packages/js/tolkam/lib-utils",
-        "@tolkam/lib-utils-ui": "file:D:/dev-packages/js/tolkam/lib-utils-ui",
-        "@tolkam/react-animatable": "file:D:/dev-packages/js/tolkam/react-animatable"
+        "@tolkam/lib-utils-ui": "file:D:/dev-packages/js/tolkam/lib-utils-ui"
     },
     "devDependencies": {
         "tslib": "^1.9.3",
