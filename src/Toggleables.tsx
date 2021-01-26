@@ -4,6 +4,10 @@ import { classNames } from '@tolkam/lib-utils-ui';
 import ToggleablesContext from './context';
 import Toggleable from './Toggleable';
 
+const STATE_PENDING = 0;
+const STATE_ACTIVATE = 1;
+const STATE_DEACTIVATE = -1;
+
 export default class Toggleables extends PureComponent<IProps, IState> {
 
     /**
@@ -23,10 +27,10 @@ export default class Toggleables extends PureComponent<IProps, IState> {
      * @inheritDoc
      */
     public componentDidMount(): void {
-        const { props, activate } = this;
-        const { defaultActive } = props;
+        const { props, activate, children } = this;
+        const active = props.defaultActive || Object.keys(children)[0];
 
-        defaultActive && activate(defaultActive);
+        active && activate(active);
     }
 
     /**
@@ -84,6 +88,7 @@ export default class Toggleables extends PureComponent<IProps, IState> {
     protected activate = (name: string) => {
         const that = this;
         const { children, update } = that;
+        const { onBeforeActivate, onActivate } = that.props;
         const promises: Promise<any>[] = [];
         const prevActive = that.state.active;
 
@@ -98,16 +103,26 @@ export default class Toggleables extends PureComponent<IProps, IState> {
             promises.push(beforeActivate ? beforeActivate() : Promise.resolve());
         });
 
-        that.setState({pending: true});
+        that.setState(
+            {pending: true},
+            () => {
+                update(name, STATE_PENDING);
+                onBeforeActivate && onBeforeActivate(name)
+            }
+        );
+
         Promise.all(promises).then(() => {
-            update(name, true);
-            update(prevActive, false);
+            update(name, STATE_ACTIVATE);
+            update(prevActive, STATE_DEACTIVATE);
         }).catch((e) => {
             if (process.env.NODE_ENV !== 'production') {
                 console.warn('Toggleables: failed to activate "%s"', name, e);
             }
         }).finally(() => {
-            that.setState({pending: false, active: name});
+            that.setState(
+                {pending: false, active: name},
+                () => onActivate && onActivate(name)
+            );
         });
     };
 
@@ -115,14 +130,23 @@ export default class Toggleables extends PureComponent<IProps, IState> {
      * Updates children state
      *
      * @param name
-     * @param active
+     * @param state
      */
-    protected update = (name: string | null, active: boolean) => {
+    protected update = (name: string | null, state: number) => {
         name && this.children[name].forEach(item => {
             const { onActivate, onDeactivate } = item.props;
-            if(item.isActive() !== active) {
-                item.setActive(active);
-                active ? onActivate && onActivate() : onDeactivate && onDeactivate();
+
+            if(state === STATE_PENDING) {
+                !item.isPending() && item.setPending(true);
+            } else {
+                const activate = (state === STATE_ACTIVATE);
+                if(item.isActive() !== activate) {
+                    item.setPending(false);
+                    item.setActive(activate);
+                    activate
+                        ? onActivate && onActivate()
+                        : onDeactivate && onDeactivate();
+                }
             }
         });
     };
@@ -131,14 +155,17 @@ export default class Toggleables extends PureComponent<IProps, IState> {
 type TChildren = {
     [name: string] : Toggleable[]
 };
-type TLifecycleCallback = (name: string, child: Toggleable) => any;
+type TRegisterCallback = (name: string, child: Toggleable) => any;
+type TActivateCallback = (name: string) => any;
 
 export interface IProps extends HTMLProps<HTMLDivElement> {
     defaultActive?: string;
     pendingClassName?: string;
 
-    onRegister?: TLifecycleCallback;
-    onUnregister?: TLifecycleCallback;
+    onRegister?: TRegisterCallback;
+    onUnregister?: TRegisterCallback;
+    onBeforeActivate?: TActivateCallback;
+    onActivate?: TActivateCallback;
 }
 
 export interface IState {

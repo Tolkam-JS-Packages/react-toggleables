@@ -7,12 +7,15 @@ export default class Toggleable extends PureComponent<IProps, IState> {
 
     public static defaultProps = {
         activeClassName: 'active',
+        pendingClassName: 'pending',
+        unmount: true,
     };
 
     /**
      * @type IState
      */
     public state = {
+        pending: false,
         active: false,
     };
 
@@ -36,11 +39,25 @@ export default class Toggleable extends PureComponent<IProps, IState> {
     }
 
     /**
+     * Sets into pending state
+     */
+    public setPending = (pending: boolean) => {
+        this.setState({ pending });
+    };
+
+    /**
      * Activates item
      */
     public setActive = (active: boolean) => {
         this.setState({ active });
     };
+
+    /**
+     * Checks if item is pending
+     */
+    public isPending() {
+        return this.state.pending;
+    }
 
     /**
      * Checks if item is active
@@ -63,7 +80,7 @@ export default class Toggleable extends PureComponent<IProps, IState> {
     public render() {
         const that = this;
         const { props, state } = that;
-        const { activeClassName, unmount } = props;
+        const { activeClassName, pendingClassName, unmount } = props;
         const { active } = state;
         const child = Children.only(props.children);
 
@@ -75,8 +92,10 @@ export default class Toggleable extends PureComponent<IProps, IState> {
         const elProps = {
             // when parent is Trigger, pass it's onClick() to child
             onClick: props.onClick,
+            onKeyDown: props.onKeyDown,
             ...childProps,
             className: classNames(childProps.className, {
+                [pendingClassName as string]: state.pending,
                 [activeClassName as string]: active,
             }),
         };
@@ -88,6 +107,7 @@ export default class Toggleable extends PureComponent<IProps, IState> {
 export interface IProps extends HTMLAttributes<Toggleable> {
     name: string;
     activeClassName?: string,
+    pendingClassName?: string,
     unmount?: boolean,
 
     beforeActivate?: () => Promise<any>,
@@ -96,5 +116,6 @@ export interface IProps extends HTMLAttributes<Toggleable> {
 }
 
 export interface IState {
+    pending: boolean;
     active: boolean;
 }

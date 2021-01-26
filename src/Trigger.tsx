@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { HTMLProps, PureComponent, MouseEvent, cloneElement, isValidElement, Children } from 'react';
+import { HTMLProps, PureComponent, MouseEvent, KeyboardEvent, cloneElement, isValidElement, Children } from 'react';
 import { classNames } from '@tolkam/lib-utils-ui';
 import ToggleablesContext from './context';
 
@@ -14,7 +14,7 @@ export default class Trigger extends PureComponent<IProps> {
      * @inheritDoc
      */
     public render(): any {
-        const props = this.props;
+        const { props, onAction } = this;
         const child = Children.only(props.children);
 
         if(!isValidElement(child)) {
@@ -24,7 +24,8 @@ export default class Trigger extends PureComponent<IProps> {
         const childProps = child.props;
         const elProps = {
             name: props.name,
-            onClick: this.onClick,
+            onClick: onAction,
+            onKeyDown: onAction,
             ...childProps,
             className: classNames(childProps.className, props.className),
         };
@@ -37,7 +38,13 @@ export default class Trigger extends PureComponent<IProps> {
      *
      * @param e
      */
-    protected onClick = (e: MouseEvent<HTMLSpanElement>) => {
+    protected onAction = (
+        e: MouseEvent<HTMLSpanElement> & KeyboardEvent<HTMLSpanElement>
+    ) => {
+        if(e.type === 'keydown' && ['Enter', ' '].indexOf(e.key) < 0) {
+            return;
+        }
+
         e.preventDefault();
         this.context.activate(this.props.of);
     };
