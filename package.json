@@ -1,18 +1,19 @@
 {
     "name": "@tolkam/react-toggleables",
-    "version": "1.0.0",
-    "description": "Toggleable elements",
-    "main": "src/index.ts",
+    "description": "Base components for toggleable elements (tabs, etc.)",
+    "browser": "src/index.ts",
+    "types": "src/index.ts",
     "license": "UNLICENSED",
-    "private": true,
     "dependencies": {
-        "react": "^16.5",
-        "@tolkam/lib-utils": "file:D:/dev-packages/js/tolkam/lib-utils",
-        "@tolkam/lib-utils-ui": "file:D:/dev-packages/js/tolkam/lib-utils-ui"
+        "@tolkam/lib-utils": "^0.2.0",
+        "@tolkam/lib-utils-ui": "^0.1.0"
+    },
+    "peerDependencies": {
+        "react": "^16.14"
     },
     "devDependencies": {
         "tslib": "^1.9.3",
         "@types/node": "^12.12.34",
-        "@types/react": "^16.4"
+        "@types/react": "^16.14"
     }
 }

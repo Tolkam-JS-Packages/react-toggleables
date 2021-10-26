@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { PureComponent, HTMLAttributes, Children, cloneElement, isValidElement } from 'react';
 import { classNames } from '@tolkam/lib-utils-ui';
 import ToggleablesContext, { TContext } from './context';
