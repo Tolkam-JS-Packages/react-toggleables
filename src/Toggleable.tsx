@@ -28,6 +28,8 @@ export default class Toggleable extends PureComponent<IProps, IState> {
      */
     protected destroy?: Function;
 
+    protected ref: HTMLElement;
+
     /**
      * @param props
      * @param context
@@ -97,10 +99,13 @@ export default class Toggleable extends PureComponent<IProps, IState> {
                 [pendingClassName as string]: state.pending,
                 [activeClassName as string]: active,
             }),
+            ref: (r: HTMLElement) => this.ref = r
         };
 
         return cloneElement(child, elProps);
     }
+
+    public getElement = () => this.ref;
 }
 
 export interface IProps extends HTMLAttributes<Toggleable> {

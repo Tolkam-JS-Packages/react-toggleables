@@ -23,16 +23,23 @@ export default class Toggleables extends PureComponent<IProps, IState> {
     protected children: TChildren = {};
 
     /**
+     * @type HTMLElement
+     */
+    protected ref: HTMLElement;
+
+    /**
      * @inheritDoc
      */
     public componentDidMount(): void {
-        const { props, activate, children } = this;
+        const { props, activate, children, onDocClick } = this;
         const defaultActive = props.defaultActive;
 
         if(defaultActive !== false) {
             const activeName = defaultActive || Object.keys(children)[0];
             activeName && activate(activeName);
         }
+
+        props.deactivateOnOutsideClicks && document.addEventListener('click', onDocClick);
     }
 
     /**
@@ -78,7 +85,7 @@ export default class Toggleables extends PureComponent<IProps, IState> {
         });
 
         return <ToggleablesContext.Provider value={that}>
-            {cloneElement(child, {...childProps, className})}
+            {cloneElement(child, {...childProps, className, ref: (r: HTMLElement) => this.ref = r})}
         </ToggleablesContext.Provider>;
     }
 
@@ -100,7 +107,8 @@ export default class Toggleables extends PureComponent<IProps, IState> {
         }
 
         // collect beforeActivate promises
-        children[name].forEach((item) => {
+        const childrenArr = children[name] || [];
+        childrenArr.forEach((item) => {
             const { beforeActivate } = item.props;
             promises.push(beforeActivate ? beforeActivate() : Promise.resolve());
         });
@@ -135,7 +143,8 @@ export default class Toggleables extends PureComponent<IProps, IState> {
      * @param state
      */
     protected update = (name: string | null, state: number) => {
-        name && this.children[name].forEach(item => {
+        const childrenArr = this.children[name!] || [];
+        childrenArr.forEach(item => {
             const { onActivate, onDeactivate } = item.props;
 
             if(state === STATE_PENDING) {
@@ -152,6 +161,21 @@ export default class Toggleables extends PureComponent<IProps, IState> {
             }
         });
     };
+
+    /**
+     * Handles document clicks
+     *
+     * @param e
+     */
+    protected onDocClick = (e: MouseEvent) => {
+        const { ref } = this;
+        const activeChildren = this.children[this.state.active!];
+
+        if(activeChildren && ref && !ref.contains(e.target as any)) {
+            // "activate" dummy child to force close others
+            this.activate(Math.random().toString(36));
+        }
+    }
 }
 
 type TChildren = {
@@ -163,6 +187,7 @@ type TActivateCallback = (name: string) => any;
 export interface IProps extends HTMLProps<HTMLDivElement> {
     defaultActive?: string | false;
     pendingClassName?: string;
+    deactivateOnOutsideClicks?: boolean;
 
     onRegister?: TRegisterCallback;
     onUnregister?: TRegisterCallback;
