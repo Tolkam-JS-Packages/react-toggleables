@@ -1,6 +1,6 @@
 import { HTMLProps, PureComponent, MouseEvent, KeyboardEvent, cloneElement, isValidElement, Children } from 'react';
 import { classNames } from '@tolkam/lib-utils-ui';
-import ToggleablesContext from './context';
+import ToggleablesContext, { TContext } from './context';
 
 export default class Trigger extends PureComponent<IProps> {
 
@@ -45,7 +45,7 @@ export default class Trigger extends PureComponent<IProps> {
         }
 
         e.preventDefault();
-        this.context.activate(this.props.of);
+        (this.context as TContext).activate(this.props.of);
     };
 }
 

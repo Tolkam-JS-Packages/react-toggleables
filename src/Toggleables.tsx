@@ -27,9 +27,12 @@ export default class Toggleables extends PureComponent<IProps, IState> {
      */
     public componentDidMount(): void {
         const { props, activate, children } = this;
-        const active = props.defaultActive || Object.keys(children)[0];
+        const defaultActive = props.defaultActive;
 
-        active && activate(active);
+        if(defaultActive !== false) {
+            const activeName = defaultActive || Object.keys(children)[0];
+            activeName && activate(activeName);
+        }
     }
 
     /**
@@ -84,7 +87,7 @@ export default class Toggleables extends PureComponent<IProps, IState> {
      *
      * @param name
      */
-    protected activate = (name: string) => {
+    public activate = (name: string) => {
         const that = this;
         const { children, update } = that;
         const { onBeforeActivate, onActivate } = that.props;
@@ -158,7 +161,7 @@ type TRegisterCallback = (name: string, child: Toggleable) => any;
 type TActivateCallback = (name: string) => any;
 
 export interface IProps extends HTMLProps<HTMLDivElement> {
-    defaultActive?: string;
+    defaultActive?: string | false;
     pendingClassName?: string;
 
     onRegister?: TRegisterCallback;
